@@ -3,214 +3,228 @@
  * Assignment
  */
 
+let isNight = false; // variable to track day/night mode
+
+// ============================================================
+// 1. SETUP & DRAW
+// ============================================================
 function setup() {
-  createCanvas(550, 400);
+  createCanvas(1100, 800);
   frameRate(20); // slow down the frame rate to see
   noFill(); // no fill for shapes
 } 
 
 function draw() {
-  background(0);
+  // background changes between day and night
+  if (isNight) {
+    background(0, 0, 0); // black night
+  } else {
+    background(25, 25, 50); // dark blue day
+  }
 
-  // background
-  stroke(255); // white
-  var standardDeviation = 400;
+  // background particles
+  stroke(255, 255, 255); // white snow
+
+  var standardDeviation = 400; // standard deviation for Gaussian distribution
   for (var i = 0; i < 5000; i++) {
+    // randomGaussian() generates a random number with a Gaussian distribution
+    // first argument is the mean (center) of the distribution
+    // second argument is the standard deviation (spread) of the distribution
     var backDist = randomGaussian(0, standardDeviation);
+    // create a vector with the random distance and a random y-coordinate
     var b = createVector(backDist, random(-height, height));
+    // translate the vector to the center of the canvas
+    b.add(width / 2, height / 2);
     point(b.x, b.y);
   }
 
-  // sun
-  stroke(227, 28, 35); // red
+  // sun / moon
+  // translate to the position of the sun/moon
   translate(width / 5, height / 4);
-  for (var i = 0; i < 5000; i++) {
-    var cirDist = (max(random(0, 1), random(0, 1)) * width) / 10;
-    var angle = random(0, PI * 2);
-    var c = createVector(cos(angle), sin(angle));
-    c.mult(cirDist);
-    point(c.x, c.y + 20);
+  if (!isNight) {
+    drawSun(); // draw sun for day
+  } else {
+    drawMoon(); // draw moon for night
   }
 
   // mount fuji
   stroke(150, 150, 225); // blue
-  for (var i = 0; i < 30000; i++) {
-    var x = random(width) - 100;
+  for (var i = 0; i < 50000; i++) {
+    // random x and y coordinates for the particles
+    var x = random(width)-120; // shift left to center the mountain
     var y = random(height);
     if (y > abs(x - 150) * 0.5 + 200) {
+      // draw the particle if it is below the mountain shape
       point(x-100, y-100);
     }
   }
 
   // snow on mount fuji
-  stroke(225); // white
-  for (var i = 0; i < 2000; i++) {
-    var x = random(70, 230);
-    var y = random(180, 260);
+  stroke(225, 225, 225); // white
+  for (var i = 0; i < 4000; i++) {
+    // random x and y coordinates for the particles
+    var x = random(-100, 500);
+    var y = random(100, 400);
     if (y > abs(x - 150) * 0.5 + 200) {
+      // draw the particle if it is below the mountain shape
       point(x-100, y-100);
     }
   }
 
   // pagoda
-  drawPagoda(width * 0.6, height * 0.75, 2);
+  drawPagoda(width * 0.6, height * 0.75, 4); // x, y, scale
 }
 
-// pagoda function
+// ============================================================
+// 2. SUN / MOON TOGGLE
+// ============================================================
+// draw sun with red circle
+function drawSun() {
+  stroke(227, 28, 35);
+  for (var i = 0; i < 7000; i++) {
+    // random distance from the center of the sun
+    var cirDist = (max(random(0, 1), random(0, 1)) * width) / 10;
+    // random angle for the point on the sun's circumference
+    var angle = random(0, PI * 2);
+    // create a vector for the point on the sun's circumference
+    var c = createVector(cos(angle), sin(angle));
+    c.mult(cirDist); // scale the vector by the random distance
+    point(c.x - 20, c.y - 20); // draw the point
+  }
+}
+
+// draw moon with white crescent
+function drawMoon() {
+  stroke(255);
+  for (var i = 0; i < 5000; i++) {
+    // random distance from the center of the moon
+    var cirDist = (max(random(0, 1), random(0, 1)) * width) / 10;
+    // random angle for the point on the moon's circumference
+    var angle = random(0, PI * 2);
+    // create a vector for the point on the moon's circumference
+    var c = createVector(cos(angle), sin(angle));
+    c.mult(cirDist); // scale the vector by the random distance
+    var cutoutX = c.x - 55;
+    var cutoutY = c.y + 25;
+    if (cutoutX * cutoutX + cutoutY * cutoutY > 75 * 75) {
+      point(c.x - 20, c.y - 20); // draw the point
+    }
+  }
+}
+
+function keyPressed() {
+  // toggle between day and night when spacebar is pressed
+  if (key === ' ') {
+    isNight = !isNight;
+  }
+}
+
+// ============================================================
+// 3. PAGODA FUNCTIONS
+// ============================================================
+// draw pagoda with three floors and roofs
 function drawPagoda(x, y, s) {
   stroke(255, 0, 0); // red
 
   // bottom floor
-  for (var i = 0; i < 2000; i++) {
+  for (var i = 0; i < 5000; i++) {
+    // random x and y coordinates for the particles
     var px = random(x - 30 * s, x + 30 * s);
     var py = random(y - 45 * s, y);
 
-    // slightly noisy edges
-    if (
+    if ( // only keep particles close to pagoda shape
       px > x - 30 * s + random(-5 * s, 5 * s) &&
       px < x + 30 * s + random(-5 * s, 5 * s)
     ) {
-      point(px, py);
+      point(px, py); // draw the particle
     }
   }
 
   // middle floor
-  for (var i = 0; i < 2000; i++) {
+  for (var i = 0; i < 4000; i++) {
+    // random x and y coordinates for the particles
     var px = random(x - 23 * s, x + 23 * s);
     var py = random(y - 90 * s, y - 45 * s);
-    point(px, py);
+    point(px, py); // draw the particle
   }
 
   // top floor
-  for (var i = 0; i < 2000; i++) {
+  for (var i = 0; i < 3000; i++) {
+    // random x and y coordinates for the particles
     var px = random(x - 17 * s, x + 17 * s);
     var py = random(y - 125 * s, y - 90 * s);
-    point(px, py);
+    point(px, py); // draw the particle
   }
 
   // bottom roof
-  drawNoisyRoof(
-    x,
-    y - 45 * s,
-    55 * s,
-    20 * s,
-    180,
-    55,
-    35
-  );
-
+  drawRoof(x, y - 45 * s, 55 * s, 20 * s, 250, 55, 35);
   // middle roof
-  drawNoisyRoof(
-    x,
-    y - 90 * s,
-    43 * s,
-    18 * s,
-    200,
-    55,
-    30
-  );
-
+  drawRoof(x, y - 90 * s, 43 * s, 18 * s, 250, 55, 30);
   // top roof
-  drawNoisyRoof(
-    x,
-    y - 125 * s,
-    32 * s,
-    15 * s,
-    220,
-    55,
-    25
-  );
+  drawRoof(x, y - 125 * s, 32 * s, 15 * s, 250, 55, 25);
 
-  // windows
   // bottom windows
-  drawNoisyWindow(x - 18 * s, y - 25 * s, 8 * s, 15 * s);
-  drawNoisyWindow(x,      y - 25 * s, 8 * s, 15 * s);
-  drawNoisyWindow(x + 18 * s, y - 25 * s, 8 * s, 15 * s);
+  drawWindow(x - 18 * s, y - 25 * s, 8 * s, 15 * s);
+  drawWindow(x, y - 25 * s, 8 * s, 15 * s);
+  drawWindow(x + 18 * s, y - 25 * s, 8 * s, 15 * s);
   // middle window
-  drawNoisyWindow(x, y - 68 * s, 8 * s, 13 * s);
+  drawWindow(x, y - 68 * s, 8 * s, 13 * s);
   // top window
-  drawNoisyWindow(x, y - 105 * s, 7 * s, 11 * s);
+  drawWindow(x, y - 105 * s, 7 * s, 11 * s);
+
   // spire
   stroke(129, 149, 134); // light green
-  drawNoisyLine(
-    x,
-    y - 140 * s,
-    x,
-    y - 180 * s,
-    150
-  );
+  drawLine(x, y - 140 * s, x, y - 180 * s, 150);
+
   // spire ornaments
-  drawNoisyCircle(x, y - 148 * s, 7 * s, 80);
-  drawNoisyCircle(x, y - 160 * s, 5 * s, 60);
-  drawNoisyCircle(x, y - 172 * s, 3 * s, 40);
+  drawCircle(x, y - 148 * s, 7 * s, 200); // bottom ornament
+  drawCircle(x, y - 160 * s, 5 * s, 180); // middle ornament
+  drawCircle(x, y - 172 * s, 3 * s, 150); // top ornament
 }
 
-// roof function
-function drawNoisyRoof(cx, cy, roofWidth, roofHeight,
-                       particleCount, edgeNoise, verticalNoise) {
+// draw roof with triangle shape
+function drawRoof(cx, cy, roofWidth, roofHeight, particleCount, roofEdge, verticalLine) {
   stroke(129, 149, 134); // light green
+  // draw roof particles
   for (var i = 0; i < particleCount; i++) {
+    // random x coordinate within the roof width
     var px = random(cx - roofWidth, cx + roofWidth);
     // triangle roof shape
     var distanceFromCenter = abs(px - cx);
-    var roofTop = cy -
-      roofHeight *
-      (1 - distanceFromCenter / roofWidth);
+    var roofTop = cy - roofHeight * (1 - distanceFromCenter / roofWidth);
     var py = random(roofTop, cy);
-    px += random(-edgeNoise / 10, edgeNoise / 10);
-    py += random(-verticalNoise / 10, verticalNoise / 10);
-    point(px, py);
+    // random particle displacement
+    px += random(-roofEdge / 10, roofEdge / 10);
+    py += random(-verticalLine / 10, verticalLine / 10);
+    point(px, py); // draw the particle
   }
 
-  stroke(129, 149, 134); // light green
-  drawNoisyLine(
-    cx - roofWidth,
-    cy,
-    cx,
-    cy - roofHeight,
-    250
-  );
-  drawNoisyLine(
-    cx,
-    cy - roofHeight,
-    cx + roofWidth,
-    cy,
-    250
-  );
-  // long curved-looking eaves
-  drawNoisyLine(
-    cx - roofWidth,
-    cy,
-    cx - roofWidth - 12,
-    cy + 5,
-    80
-  );
-  drawNoisyLine(
-    cx + roofWidth,
-    cy,
-    cx + roofWidth + 12,
-    cy + 5,
-    80
-  );
+  // draw roof outline
+  drawLine(cx - roofWidth, cy, cx, cy - roofHeight, 250);
+  drawLine(cx, cy - roofHeight, cx + roofWidth, cy, 250);
 }
 
 // line function
-function drawNoisyLine(x1, y1, x2, y2, amount) {
+function drawLine(x1, y1, x2, y2, amount) {
+  // draw a line with random particles
   for (var i = 0; i < amount; i++) {
+    // random interpolation between the two points
     var t = random();
     var x = lerp(x1, x2, t);
     var y = lerp(y1, y2, t);
     // random particle displacement
     x += randomGaussian(0, 2.5);
     y += randomGaussian(0, 2.5);
-    point(x, y);
+    point(x, y); // draw the particle
   }
 }
 
 // window function
-function drawNoisyWindow(x, y, w, h) {
+function drawWindow(x, y, w, h) {
+  // draw a window with random particles
   stroke(255); // white
   for (var i = 0; i < 100; i++) {
+    // random x and y coordinates for the particles
     var px = random(x - w / 2, x + w / 2);
     var py = random(y - h / 2, y + h / 2);
     // only keep particles close to window shape
@@ -220,19 +234,22 @@ function drawNoisyWindow(x, y, w, h) {
       py > y - h / 2 &&
       py < y + h / 2
     ) {
-      point(px, py);
+      point(px, py); // draw the particle
     }
   }
 }
 
 // circle function
-function drawNoisyCircle(x, y, radius, amount) {
+function drawCircle(x, y, radius, amount) {
+  // draw a circle with random particles
   for (var i = 0; i < amount; i++) {
+    // random angle and distance for the particles
     var angle = random(TWO_PI);
     var r = radius / 2 + randomGaussian(0, radius / 6);
+    // calculate the x and y coordinates of the particle
     var px = x + cos(angle) * r;
     var py = y + sin(angle) * r;
-    point(px, py);
+    point(px, py); // draw the particle
   }
 }
 
